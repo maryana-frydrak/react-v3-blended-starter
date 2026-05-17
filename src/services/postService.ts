@@ -1,11 +1,35 @@
 import axios from "axios";
+import type { Post } from "../types/post";
 
 axios.defaults.baseURL = "https://jsonplaceholder.typicode.com";
 
-export const fetchPosts = async (searchText, page) => {};
+export const fetchPosts = async (
+  searchText: string,
+  page: number
+): Promise<{ posts: Post[]; totalCount: number }> => {
+  const res = await axios.get<Post[]>("/posts", {
+    params: {
+      q: searchText,
+      _page: page,
+      _limit: 8,
+    },
+  });
 
-export const createPost = async (newPost) => {};
+  const totalCount = res.headers["x-total-count"];
 
-export const editPost = async (newDataPost) => {};
+  return { posts: res.data, totalCount };
+};
 
-export const deletePost = async (postId) => {};
+export const createPost = async (newPost: Post): Promise<Post> => {
+  const { data } = await axios.post<Post>("/posts", newPost);
+  return data;
+};
+
+// export const editPost = async (newDataPost) => {};
+
+export const deletePost = async (postId: number): Promise<Post> => {
+  console.log("delete");
+
+  const { data } = await axios.delete<Post>(`/posts/${postId}`);
+  return data;
+};
