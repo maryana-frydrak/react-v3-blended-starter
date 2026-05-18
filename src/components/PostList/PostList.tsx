@@ -6,9 +6,11 @@ import toast from "react-hot-toast";
 
 interface postListProps {
   posts: Post[];
+  toogleModal: () => void;
+  toogleEditPost: (post: Post) => void;
 }
 
-export default function PostList({ posts }: postListProps) {
+export default function PostList({ posts, toogleModal, toogleEditPost }: postListProps) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: deletePost,
@@ -29,7 +31,15 @@ export default function PostList({ posts }: postListProps) {
           <h2 className={css.title}>{post.title}</h2>
           <p className={css.content}>{post.body}</p>
           <div className={css.footer}>
-            <button className={css.edit}>Edit</button>
+            <button
+              className={css.edit}
+              onClick={() => {
+                toogleEditPost(post);
+                toogleModal();
+              }}
+            >
+              Edit
+            </button>
             <button onClick={() => mutation.mutate(post.id!)} className={css.delete}>
               Delete
             </button>

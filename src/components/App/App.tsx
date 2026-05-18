@@ -3,17 +3,20 @@ import SearchBox from "../SearchBox/SearchBox";
 import Modal from "../Modal/Modal";
 import Pagination from "../Pagination/Pagination";
 import PostForm from "../CreatePostForm/CreatePostForm";
+import EditPostForm from "../EditPostForm/EditPostForm";
 
 import css from "./App.module.css";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchPosts } from "../../services/postService";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import type { Post } from "../../types/post";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const { data } = useQuery({
     queryKey: ["posts", searchQuery, currentPage],
     queryFn: () => fetchPosts(searchQuery, currentPage),
@@ -28,7 +31,15 @@ export default function App() {
   }, 1000);
 
   const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+  };
+
+  const handleEditPost = (post: Post) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className={css.app}>
@@ -47,10 +58,16 @@ export default function App() {
       </header>
       {isModalOpen && (
         <Modal onClose={closeModal}>
-          <PostForm onClose={closeModal} />
+          {selectedPost ? (
+            <EditPostForm post={selectedPost} onClose={closeModal} />
+          ) : (
+            <PostForm onClose={closeModal} />
+          )}
         </Modal>
       )}
-      {posts.length > 0 && <PostList posts={posts} />}
+      {posts.length > 0 && (
+        <PostList posts={posts} toogleModal={openModal} toogleEditPost={handleEditPost} />
+      )}
     </div>
   );
 }
